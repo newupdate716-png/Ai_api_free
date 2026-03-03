@@ -1,4 +1,4 @@
-module.exports = async (req, res) => {
+module.exports = async function (req, res) {
     try {
         const prompt = req.query.prompt;
 
@@ -6,21 +6,24 @@ module.exports = async (req, res) => {
             return res.status(400).json({
                 status: false,
                 message: "Prompt query is required!",
-                example: "/api?prompt=hello",
+                example: "/api?prompt=Hello",
                 credit: "@sakib01994",
                 group: "@sakib_api"
             });
         }
 
-        const apiUrl = "https://r-gengpt-api.vercel.app/api?prompt=" + encodeURIComponent(prompt);
+        const url = "https://r-gengpt-api.vercel.app/api?prompt=" + encodeURIComponent(prompt);
 
-        const response = await fetch(apiUrl);
+        const response = await fetch(url);
 
-        if (!response.ok) {
-            throw new Error("Main API Failed");
+        const text = await response.text(); // text first (safer than json)
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = { reply: text }; // if not JSON, wrap as text
         }
-
-        const data = await response.json();
 
         return res.status(200).json({
             status: true,
@@ -31,10 +34,10 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({
+        return res.status(200).json({
             status: false,
-            message: "Something went wrong!",
-            error: error.message,
+            message: "Main API Error",
+            details: error.toString(),
             credit: "@sakib01994",
             group: "@sakib_api"
         });
