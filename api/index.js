@@ -1,6 +1,6 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     try {
-        const { prompt } = req.query;
+        const prompt = req.query.prompt;
 
         if (!prompt) {
             return res.status(400).json({
@@ -12,10 +12,13 @@ export default async function handler(req, res) {
             });
         }
 
-        // Call your main API
-        const response = await fetch(
-            `https://r-gengpt-api.vercel.app/api?prompt=${encodeURIComponent(prompt)}`
-        );
+        const apiUrl = "https://r-gengpt-api.vercel.app/api?prompt=" + encodeURIComponent(prompt);
+
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            throw new Error("Main API Failed");
+        }
 
         const data = await response.json();
 
@@ -36,4 +39,4 @@ export default async function handler(req, res) {
             group: "@sakib_api"
         });
     }
-}
+};
